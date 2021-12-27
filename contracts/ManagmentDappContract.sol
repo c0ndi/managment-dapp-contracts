@@ -6,10 +6,12 @@ contract ManagmentDappContract {
         uint256 _id,
         uint256 _age,
         uint256 _level,
+        address _address,
         string _fullName,
         string _gender,
         string _role,
-        bool _isWorker
+        bool _isWorker,
+        bool _isRegistered
     );
     event workerHired(uint256 _id);
     event workedFired(uint256 _id);
@@ -20,10 +22,12 @@ contract ManagmentDappContract {
         uint256 id;
         uint256 age;
         uint256 level;
+        address addr;
         string fullName;
         string gender;
         string role;
         bool isWorker;
+        bool isRegistered;
     }
 
     address owner;
@@ -39,35 +43,46 @@ contract ManagmentDappContract {
     }
 
     mapping(uint256 => Person) public persons;
+    mapping(address => uint256) public addressToId; 
     mapping(uint256 => Person) public pendingWorkers;
 
     function register(
         uint256 _age,
         string memory _fullName,
         string memory _gender,
-        string memory _role,
-        bool _isWorker // isworker po frontendzie
+        string memory _role
+
     ) public {
+        require(
+            !(pendingWorkers[addressToId[msg.sender]].addr == msg.sender), 
+            "User already registered"
+            );
+
         pendingWorkers[personCount] = Person(
             personCount,
             _age,
             1,
+            msg.sender,
             _fullName,
             _gender,
             _role,
-            _isWorker
+            false,
+            true
         );
 
         emit personAdded(
             personCount,
             _age,
             0,
+            msg.sender,
             _fullName,
             _gender,
             _role,
-            _isWorker
+            false,
+            true
         );
 
+        addressToId[msg.sender] = personCount;
         personCount++;
     }
 
@@ -92,5 +107,16 @@ contract ManagmentDappContract {
         if (persons[_id].level < 2) {
             persons[_id].level = persons[_id].level + 1;
         }
+    }
+    
+    function getIsRegistered() public view returns(bool){
+        if(pendingWorkers[addressToId[msg.sender]].addr == msg.sender) {
+            return pendingWorkers[addressToId[msg.sender]].isRegistered;
+        }
+        return false;
+    }
+
+    function getAddressToId() public view returns(uint) {
+        return addressToId[msg.sender];
     }
 }
