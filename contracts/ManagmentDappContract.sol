@@ -32,6 +32,8 @@ contract ManagmentDappContract {
 
     address owner;
     uint256 public personCount = 0;
+    uint256 public pendingWorkersCount = 0;
+    uint256 public workersCount = 0;
 
     constructor() {
         owner = msg.sender;
@@ -84,16 +86,20 @@ contract ManagmentDappContract {
 
         addressToId[msg.sender] = personCount;
         personCount++;
+        pendingWorkersCount++;
     }
 
     function hireWorker(uint256 _id) public _onlyOwner {
         pendingWorkers[_id].isWorker = true;
         persons[_id] = pendingWorkers[_id];
         delete pendingWorkers[_id];
+        pendingWorkersCount--;
+        workersCount++;
     }
 
     function firedWorker(uint256 _id) public _onlyOwner {
         delete persons[_id];
+        workersCount--;
     }
 
     function changeRoleOfWorker(uint256 _id, string memory _newRole)
@@ -118,5 +124,13 @@ contract ManagmentDappContract {
 
     function getAddressToId() public view returns(uint) {
         return addressToId[msg.sender];
+    }
+
+    function getPendingWorkersCount() public view returns(uint) {
+        return pendingWorkersCount;
+    }
+
+    function getWorkersCount() public view returns(uint) {
+        return workersCount;
     }
 }
